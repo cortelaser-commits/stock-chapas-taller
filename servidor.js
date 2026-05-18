@@ -202,6 +202,23 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
 </head>
 <body>
 
+<div id="login-screen" style="position:fixed;inset:0;background:#1a1917;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:20px">
+  <div style="text-align:center;color:#fff;margin-bottom:10px">
+    <div style="font-size:32px;margin-bottom:8px">📦</div>
+    <div style="font-size:20px;font-weight:700;letter-spacing:.5px">Stock de Chapas</div>
+    <div style="font-size:13px;opacity:.5;margin-top:4px">Fischer Montajes</div>
+  </div>
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.3)">
+    <div style="font-size:14px;font-weight:600;color:#1a1917;margin-bottom:12px">Ingresá la clave de acceso</div>
+    <input id="login-input" type="password" placeholder="••••" maxlength="20"
+      style="width:100%;height:44px;text-align:center;font-size:22px;letter-spacing:6px;border:1.5px solid #ddd;border-radius:8px;outline:none;color:#1a1917;background:#f5f4f0"
+      onkeydown="if(event.key==='Enter')verificarClave()">
+    <div id="login-error" style="color:#b22020;font-size:12px;margin-top:8px;min-height:16px;text-align:center"></div>
+    <button onclick="verificarClave()" style="width:100%;height:42px;background:#1a1917;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px">Ingresar →</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
 <div class="topbar">
   <div>
     <div class="topbar-title">📦 Stock de Chapas — Fischer Montajes</div>
@@ -661,8 +678,28 @@ function switchTab(tab,el){
 }
 function toggleRef(el){const b=document.getElementById("ref-body"),open=b.style.display!=="block";b.style.display=open?"block":"none";el.classList.toggle("open",open);}
 
-cargarDesdeServidor();
+function verificarClave(){
+  const clave=document.getElementById("login-input").value;
+  if(clave==="2675"){
+    document.getElementById("login-screen").style.display="none";
+    document.getElementById("app").style.display="block";
+    sessionStorage.setItem("auth","ok");
+    cargarDesdeServidor();
+  } else {
+    document.getElementById("login-error").textContent="Clave incorrecta, intentá de nuevo";
+    document.getElementById("login-input").value="";
+    document.getElementById("login-input").focus();
+    setTimeout(()=>document.getElementById("login-error").textContent="",2500);
+  }
+}
+// Verificar si ya estaba autenticado en esta sesión
+if(sessionStorage.getItem("auth")==="ok"){
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("app").style.display="block";
+  cargarDesdeServidor();
+}
 </script>
+</div><!-- fin #app -->
 </body>
 </html>
 `;
@@ -698,5 +735,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log('Servidor Stock Chapas Fischer Montajes v3.1 - Puerto ' + PORT);
+  console.log('Servidor Stock Chapas Fischer Montajes v3.2 - Puerto ' + PORT);
 });
