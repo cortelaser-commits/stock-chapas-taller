@@ -595,8 +595,46 @@ function renderHistorial(){
         </div>
         \${h.desc?\`<div class="hist-item" style="grid-column:1/-1"><span class="hist-item-lbl">Descripción</span><span class="hist-item-val">\${h.desc}</span></div>\`:""}
       </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end">
+        \${h.anulado
+          ? \`<span style="font-size:12px;color:#999;font-style:italic">🚫 Consumo anulado</span>\`
+          : \`<button onclick="anularConsumo(\${h.id})" style="height:28px;padding:0 12px;background:none;border:1px solid #e04040;border-radius:6px;color:#b22020;font-size:12px;font-weight:600;cursor:pointer">↩ Anular consumo</button>\`
+        }
+      </div>
     </div>
   \`).join("");
+}
+
+function anularConsumo(id){
+  const h=historial.find(x=>x.id===id);
+  if(!h||h.anulado)return;
+  if(!confirm("¿Anular este consumo de "+h.proyecto+"? Se va a devolver "+h.qty_descontada+" unidad(es) al stock."))return;
+  h.anulado=true;
+  // Devolver stock si corresponde
+  if(h.qty_descontada>0){
+    const it=items.find(x=>x.mat===h.mat&&x.esp===h.chapa.replace(h.mat+" ","")&&x.pallet===h.pallet);
+    if(it){
+      it.qty+=h.qty_descontada;
+    } else {
+      // La chapa fue borrada al llegar a cero — recriarla
+      items.push({
+        id:nextId++,
+        pallet:h.pallet,
+        mat:h.mat,
+        esp:h.chapa.replace(h.mat+" ",""),
+        med:h.med,
+        tipo:h.tipo,
+        qty:h.qty_descontada
+      });
+      // Sacar de agotados si estaba
+      if(window.agotados){
+        window.agotados=window.agotados.filter(x=>!(x.mat===h.mat&&x.pallet===h.pallet));
+      }
+    }
+  }
+  render();renderHistorial();
+  guardarEnServidor();
+  showToast("↩ Consumo anulado — stock restaurado");
 }
 
 function exportHistorialCSV(){
@@ -650,7 +688,7 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       try {
         stockData = JSON.parse(b);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.writeHead(200, {'Content-Type': 'application/json'});
         res.end('{"ok":true}');
       } catch(e) { res.writeHead(400); res.end('error'); }
     });
@@ -660,5 +698,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log('Servidor Stock Chapas Fischer Montajes v3 - Puerto ' + PORT);
+  console.log('Servidor Stock Chapas Fischer Montajes v3.1 - Puerto ' + PORT);
 });
