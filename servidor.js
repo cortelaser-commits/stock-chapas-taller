@@ -47,7 +47,7 @@ const STOCK_INICIAL = {"items":[
   {"id":41,"pallet":9,"mat":"Acero Carbono","esp":"8mm","med":"—","tipo":"Entera","qty":1},
   {"id":42,"pallet":9,"mat":"Acero Carbono","esp":"10mm","med":"—","tipo":"Entera","qty":1},
   {"id":43,"pallet":9,"mat":"Acero Carbono","esp":"12mm","med":"—","tipo":"Entera","qty":1}
-],"nextId":44,"historial":[],"ts":1700000000000};
+],"nextId":44,"historial":[],"agotados":[],"ts":1700000000000};
 
 const HTML = `<!DOCTYPE html>
 <html lang="es">
@@ -460,19 +460,18 @@ function render(){
     if(!rows.length)return;any=true;
     const hasCrit=rows.some(x=>getStatus(x.qty)==="crit"),hasWarn=rows.some(x=>getStatus(x.qty)==="warn");
     html+=\`<div class="pallet-section"><div class="pallet-header"><span>📦</span><span class="pallet-num">Pallet \${p}</span>\${hasCrit?\`<span class="pallet-badge pb-crit">🔴 Sin stock</span>\`:""}\${hasWarn&&!hasCrit?\`<span class="pallet-badge pb-warn">⚠️ Stock bajo</span>\`:""}<span class="pallet-count">\${rows.length} ítem\${rows.length!==1?"s":""}</span></div>
-    <table><thead><tr><th>Material</th><th>Espesor</th><th>Medidas</th><th>Tipo</th><th>Cantidad</th><th>Estado</th><th>Consumo</th><th></th></tr></thead><tbody>
+    <table><thead><tr><th>Material</th><th>Espesor</th><th>Medidas</th><th>Tipo</th><th>Cantidad</th><th>Estado</th><th></th></tr></thead><tbody>
     \${rows.map(it=>{const s=getStatus(it.qty);return\`<tr>
       <td><span class="mat-tag \${matClass(it.mat)}">\${it.mat}</span></td>
       <td style="font-weight:600">\${it.esp}</td>
       <td style="color:var(--text2);font-size:12px">\${it.med}</td>
       <td style="color:var(--text2);font-size:12px">\${it.tipo}</td>
       <td><div class="qty-wrap">
-        <button class="qty-btn" onclick="changeQty(\${it.id},-1)">−</button>
+        <button class="qty-btn" onclick="abrirModalConsumo(\${it.id})" title="Registrar consumo">−</button>
         <input class="qty-input \${s==="ok"?"":s}" type="number" min="0" value="\${it.qty}" onchange="updateQty(\${it.id},this.value)">
         <button class="qty-btn" onclick="changeQty(\${it.id},1)">+</button>
       </div></td>
       <td>\${badgeHTML(it.qty)}</td>
-      <td><button class="btn-consumo" onclick="abrirModal(\${it.id})">📝 Registrar</button></td>
       <td><button class="btn-del" onclick="deleteRow(\${it.id})">🗑</button></td>
     </tr>\`;}).join("")}
     </tbody></table></div>\`;
@@ -484,6 +483,24 @@ function render(){
 function changeQty(id,d){const it=items.find(x=>x.id===id);if(it){it.qty=Math.max(0,it.qty+d);render();guardarEnServidor();}}
 function updateQty(id,v){const it=items.find(x=>x.id===id);if(it){it.qty=Math.max(0,parseInt(v)||0);render();guardarEnServidor();}}
 function deleteRow(id){if(confirm("¿Eliminar esta chapa del stock?")){items=items.filter(x=>x.id!==id);render();guardarEnServidor();showToast("🗑 Chapa eliminada");}}
+
+function abrirModalConsumo(id){
+  const it=items.find(x=>x.id===id);
+  if(!it||it.qty<=0){showToast("⚠️ Sin stock disponible");return;}
+  modalItemId=id;
+  document.getElementById("modal-chapa-desc").textContent=it.mat+" · "+it.esp+" · "+it.med+" · Pallet "+it.pallet+" · Stock actual: "+it.qty;
+  document.getElementById("c-proyecto").value="";
+  document.getElementById("c-presup").value="";
+  document.getElementById("c-operario").value="";
+  document.getElementById("c-desc").value="";
+  document.getElementById("c-pct").value=50;
+  document.getElementById("c-pct-val").textContent="50%";
+  document.getElementById("c-qty").value="1";
+  document.getElementById("modal-consumo").classList.add("show");
+  setTimeout(()=>document.getElementById("c-proyecto").focus(),100);
+}
+function abrirModal(id){abrirModalConsumo(id);}
+
 function addRow(){
   const p=parseInt(document.getElementById("n-pallet").value),m=document.getElementById("n-mat").value,e=document.getElementById("n-esp").value;
   const ms=document.getElementById("n-med-std").value,mc=document.getElementById("n-med-custom").value.trim(),med=mc||ms||"—";
@@ -499,55 +516,53 @@ function updateStats(){
   document.getElementById("s-total").textContent=items.reduce((a,b)=>a+b.qty,0);
   document.getElementById("s-pallets").textContent=new Set(items.map(x=>x.pallet)).size;
   document.getElementById("s-warn").textContent=warn.length;
-  document.getElementById("s-crit").textContent=crit.length;
+  const agotados=window.agotados||[];
+  document.getElementById("s-crit").textContent=crit.length+agotados.length;
   const bc=document.getElementById("alert-crit");
-  if(crit.length>0){bc.style.display="flex";document.getElementById("alert-crit-text").textContent=\`SIN STOCK — Reponer urgente: \${crit.map(x=>x.mat+" "+x.esp+" (Pallet "+x.pallet+")").join(" · ")}\`;}
-  else bc.style.display="none";
+  const todos=[...crit,...agotados];
+  if(todos.length>0){
+    bc.style.display="flex";
+    document.getElementById("alert-crit-text").textContent="SIN STOCK — Reponer urgente: "+todos.map(x=>x.mat+" "+x.esp+" (Pallet "+x.pallet+")").join(" · ");
+  } else bc.style.display="none";
 }
 
 // MODAL CONSUMO
-function abrirModal(id){
-  modalItemId=id;
-  const it=items.find(x=>x.id===id);
-  document.getElementById("modal-chapa-desc").textContent=\`\${it.mat} · \${it.esp} · \${it.med} · Pallet \${it.pallet} · Stock actual: \${it.qty}\`;
-  document.getElementById("c-proyecto").value="";
-  document.getElementById("c-presup").value="";
-  document.getElementById("c-operario").value="";
-  document.getElementById("c-desc").value="";
-  document.getElementById("c-pct").value=50;
-  document.getElementById("c-pct-val").textContent="50%";
-  document.getElementById("c-qty").value="1";
-  document.getElementById("modal-consumo").classList.add("show");
-}
 function cerrarModal(){document.getElementById("modal-consumo").classList.remove("show");modalItemId=null;}
 function confirmarConsumo(){
   const proyecto=document.getElementById("c-proyecto").value.trim();
   const presup=document.getElementById("c-presup").value.trim();
   const operario=document.getElementById("c-operario").value.trim();
-  if(!proyecto){alert("Ingresá el nombre del proyecto");return;}
-  if(!operario){alert("Ingresá el operario");return;}
+  if(!proyecto){document.getElementById("c-proyecto").focus();showToast("⚠️ Ingresá el proyecto");return;}
+  if(!operario){document.getElementById("c-operario").focus();showToast("⚠️ Ingresá el operario");return;}
   const it=items.find(x=>x.id===modalItemId);
   const descuento=parseInt(document.getElementById("c-qty").value)||0;
   const pct=parseInt(document.getElementById("c-pct").value);
   const desc=document.getElementById("c-desc").value.trim();
+  const stockAntes=it.qty;
+  const stockDespues=Math.max(0,it.qty-descuento);
+  const now=new Date();
   const consumo={
-    id: Date.now(),
-    fecha: new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+new Date().toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'}),
-    proyecto, presup, operario, desc, pct,
-    chapa: it.mat+' '+it.esp,
-    med: it.med,
-    tipo: it.tipo,
-    pallet: it.pallet,
-    qty_descontada: descuento,
-    stock_antes: it.qty,
-    stock_despues: Math.max(0,it.qty-descuento)
+    id:Date.now(),
+    fecha:now.toLocaleDateString("es-UY",{day:"2-digit",month:"2-digit",year:"numeric"})+" "+now.toLocaleTimeString("es-UY",{hour:"2-digit",minute:"2-digit"}),
+    proyecto,presup,operario,desc,pct,
+    chapa:it.mat+" "+it.esp,
+    mat:it.mat,med:it.med,tipo:it.tipo,pallet:it.pallet,
+    qty_descontada:descuento,stock_antes:stockAntes,stock_despues:stockDespues
   };
   historial.unshift(consumo);
-  if(descuento>0){it.qty=Math.max(0,it.qty-descuento);}
+  if(descuento>0){
+    it.qty=stockDespues;
+    if(it.qty===0){
+      // Guardar en agotados para mantener alerta, sacar del listado visible
+      if(!window.agotados)window.agotados=[];
+      window.agotados.push({mat:it.mat,esp:it.esp,pallet:it.pallet});
+      items=items.filter(x=>x.id!==it.id);
+    }
+  }
   cerrarModal();
   render();renderHistorial();
   guardarEnServidor();
-  showToast("✅ Consumo registrado en "+proyecto);
+  showToast("✅ Consumo registrado — "+proyecto);
 }
 
 // HISTORIAL
@@ -645,5 +660,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log('Servidor Stock Chapas Fischer Montajes - Puerto ' + PORT);
+  console.log('Servidor Stock Chapas Fischer Montajes v3 - Puerto ' + PORT);
 });
