@@ -1,8 +1,6 @@
 const http = require('http');
 const PORT = process.env.PORT || 3000;
-
 let stockData = null;
-
 const STOCK_INICIAL = {"items":[
   {"id":1,"pallet":1,"mat":"Galvanizada","esp":"0.5mm","med":"1200x2500","tipo":"Entera","qty":7},
   {"id":2,"pallet":1,"mat":"Galvanizada","esp":"0.8mm","med":"1200x1300","tipo":"Recorte","qty":6},
@@ -353,37 +351,73 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
 
 <!-- MODAL CONSUMO -->
 <div class="modal-overlay" id="modal-consumo">
-  <div class="modal">
+  <div class="modal" style="max-width:520px">
     <div class="modal-title">📝 Registrar consumo</div>
     <div class="modal-sub" id="modal-chapa-desc">Chapa seleccionada</div>
-    <div class="modal-field">
-      <label>Proyecto</label>
-      <input type="text" id="c-proyecto" placeholder="Nombre del proyecto">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="modal-field" style="grid-column:1/-1">
+        <label>Proyecto</label>
+        <input type="text" id="c-proyecto" placeholder="Nombre del proyecto">
+      </div>
+      <div class="modal-field">
+        <label>N° de Presupuesto</label>
+        <input type="text" id="c-presup" placeholder="Ej: PRES-2026-001">
+      </div>
+      <div class="modal-field">
+        <label>Operario</label>
+        <input type="text" id="c-operario" placeholder="Nombre del operario">
+      </div>
     </div>
-    <div class="modal-field">
-      <label>N° de Presupuesto</label>
-      <input type="text" id="c-presup" placeholder="Ej: PRES-2026-001">
+
+    <div style="background:#f0eeea;border-radius:8px;padding:14px;margin:12px 0">
+      <div style="font-size:12px;font-weight:700;color:#6b6860;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">📐 Medidas del corte</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="modal-field">
+          <label>Medida chapa original (mm)</label>
+          <input type="text" id="c-med-orig" placeholder="ej: 1220x2440" oninput="calcularRecorte()">
+          <span style="font-size:11px;color:#9e9b94">ancho x largo</span>
+        </div>
+        <div class="modal-field">
+          <label>Medida del corte (mm)</label>
+          <input type="text" id="c-med-corte" placeholder="ej: 800x1500" oninput="calcularRecorte()">
+          <span style="font-size:11px;color:#9e9b94">ancho x largo</span>
+        </div>
+      </div>
+      <div id="calc-result" style="margin-top:10px;display:none">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+          <div style="background:#fff;border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:11px;color:#9e9b94">Área usada</div>
+            <div style="font-size:14px;font-weight:700;color:#1a1917" id="calc-usado">—</div>
+          </div>
+          <div style="background:#fff;border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:11px;color:#9e9b94">% utilizado</div>
+            <div style="font-size:14px;font-weight:700;color:#1a1917" id="calc-pct">—</div>
+          </div>
+          <div style="background:#fff;border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:11px;color:#9e9b94">Sobrante</div>
+            <div style="font-size:14px;font-weight:700" id="calc-sobre">—</div>
+          </div>
+        </div>
+        <div id="recorte-aviso" style="display:none;background:#e6f4e6;border:1px solid #4caf50;border-radius:6px;padding:10px;font-size:13px;color:#1e5c1e">
+          ✂️ <strong>Se va a generar un recorte automático</strong> con el sobrante
+          <div style="margin-top:6px;font-size:12px" id="recorte-detalle"></div>
+        </div>
+        <div id="recorte-descarte" style="display:none;background:#fef3db;border:1px solid #EF9F27;border-radius:6px;padding:10px;font-size:13px;color:#633806">
+          ⚠️ El sobrante es menor al 10% — se descarta, no se guarda como recorte.
+        </div>
+      </div>
     </div>
-    <div class="modal-field">
-      <label>Operario</label>
-      <input type="text" id="c-operario" placeholder="Nombre del operario">
-    </div>
+
     <div class="modal-field">
       <label>Descripción del corte (opcional)</label>
-      <textarea id="c-desc" placeholder="Ej: Tapa lateral 400x600mm"></textarea>
-    </div>
-    <div class="modal-field">
-      <label>% utilizado de la chapa</label>
-      <div class="pct-wrap">
-        <input type="range" id="c-pct" min="1" max="100" value="50" oninput="document.getElementById('c-pct-val').textContent=this.value+'%'">
-        <span class="pct-val" id="c-pct-val">50%</span>
-      </div>
+      <textarea id="c-desc" placeholder="Ej: Tapa lateral, escuadra, etc." style="height:55px"></textarea>
     </div>
     <div class="modal-field">
       <label>Cantidad a descontar del stock</label>
       <select id="c-qty">
         <option value="1">1 unidad</option>
-        <option value="0">0 (solo registrar, no descontar)</option>
+        <option value="0">0 (solo registrar, no descontar stock)</option>
       </select>
     </div>
     <div class="modal-actions">
@@ -501,6 +535,51 @@ function changeQty(id,d){const it=items.find(x=>x.id===id);if(it){it.qty=Math.ma
 function updateQty(id,v){const it=items.find(x=>x.id===id);if(it){it.qty=Math.max(0,parseInt(v)||0);render();guardarEnServidor();}}
 function deleteRow(id){if(confirm("¿Eliminar esta chapa del stock?")){items=items.filter(x=>x.id!==id);render();guardarEnServidor();showToast("🗑 Chapa eliminada");}}
 
+function parseMed(str){
+  const parts=(str||"").replace(/[xX×]/,"x").split("x").map(s=>parseFloat(s.trim()));
+  if(parts.length===2&&!isNaN(parts[0])&&!isNaN(parts[1])&&parts[0]>0&&parts[1]>0) return {w:parts[0],h:parts[1]};
+  return null;
+}
+
+function calcularRecorte(){
+  const orig=parseMed(document.getElementById("c-med-orig").value);
+  const corte=parseMed(document.getElementById("c-med-corte").value);
+  const res=document.getElementById("calc-result");
+  if(!orig||!corte){res.style.display="none";return;}
+  const areaOrig=orig.w*orig.h;
+  const areaCorte=corte.w*corte.h;
+  const pct=Math.min(100,Math.round(areaCorte/areaOrig*100));
+  const sobrePct=100-pct;
+  document.getElementById("calc-result").style.display="block";
+  document.getElementById("calc-usado").textContent=corte.w+"×"+corte.h+" mm";
+  document.getElementById("calc-pct").textContent=pct+"%";
+  const sobreEl=document.getElementById("calc-sobre");
+  sobreEl.textContent=sobrePct+"%";
+  sobreEl.style.color=sobrePct>=10?"#1e5c1e":"#b22020";
+
+  const aviso=document.getElementById("recorte-aviso");
+  const descarte=document.getElementById("recorte-descarte");
+  if(sobrePct>=10){
+    // Calcular medida del recorte sobrante (lado más largo de la diferencia)
+    let recW, recH;
+    if(orig.w>corte.w&&orig.h>corte.h){
+      // Corte interior — sobrante es el mayor lado
+      recW=orig.w; recH=orig.h-corte.h;
+    } else if(orig.w>corte.w){
+      recW=orig.w-corte.w; recH=orig.h;
+    } else {
+      recW=orig.w; recH=orig.h-corte.h;
+    }
+    recW=Math.round(recW); recH=Math.round(recH);
+    document.getElementById("recorte-detalle").textContent=recW+"×"+recH+" mm · "+sobrePct+"% del área original";
+    window._recorteGenerado={w:recW,h:recH,pct:sobrePct};
+    aviso.style.display="block"; descarte.style.display="none";
+  } else {
+    window._recorteGenerado=null;
+    aviso.style.display="none"; descarte.style.display="block";
+  }
+}
+
 function abrirModalConsumo(id){
   const it=items.find(x=>x.id===id);
   if(!it||it.qty<=0){showToast("⚠️ Sin stock disponible");return;}
@@ -510,9 +589,15 @@ function abrirModalConsumo(id){
   document.getElementById("c-presup").value="";
   document.getElementById("c-operario").value="";
   document.getElementById("c-desc").value="";
-  document.getElementById("c-pct").value=50;
-  document.getElementById("c-pct-val").textContent="50%";
   document.getElementById("c-qty").value="1";
+  // Pre-cargar medida original si la chapa la tiene
+  const medOrig=it.med&&it.med!=="—"?it.med:"";
+  document.getElementById("c-med-orig").value=medOrig;
+  document.getElementById("c-med-corte").value="";
+  document.getElementById("calc-result").style.display="none";
+  document.getElementById("recorte-aviso").style.display="none";
+  document.getElementById("recorte-descarte").style.display="none";
+  window._recorteGenerado=null;
   document.getElementById("modal-consumo").classList.add("show");
   setTimeout(()=>document.getElementById("c-proyecto").focus(),100);
 }
@@ -544,7 +629,7 @@ function updateStats(){
 }
 
 // MODAL CONSUMO
-function cerrarModal(){document.getElementById("modal-consumo").classList.remove("show");modalItemId=null;}
+function cerrarModal(){document.getElementById("modal-consumo").classList.remove("show");modalItemId=null;window._recorteGenerado=null;}
 function confirmarConsumo(){
   const proyecto=document.getElementById("c-proyecto").value.trim();
   const presup=document.getElementById("c-presup").value.trim();
@@ -553,33 +638,60 @@ function confirmarConsumo(){
   if(!operario){document.getElementById("c-operario").focus();showToast("⚠️ Ingresá el operario");return;}
   const it=items.find(x=>x.id===modalItemId);
   const descuento=parseInt(document.getElementById("c-qty").value)||0;
-  const pct=parseInt(document.getElementById("c-pct").value);
+  const medOrig=document.getElementById("c-med-orig").value.trim();
+  const medCorte=document.getElementById("c-med-corte").value.trim();
   const desc=document.getElementById("c-desc").value.trim();
   const stockAntes=it.qty;
   const stockDespues=Math.max(0,it.qty-descuento);
+
+  // Calcular % usado real si hay medidas
+  let pct=0;
+  const orig=parseMed(medOrig), corte=parseMed(medCorte);
+  if(orig&&corte) pct=Math.min(100,Math.round(corte.w*corte.h/(orig.w*orig.h)*100));
+
   const now=new Date();
   const consumo={
     id:Date.now(),
     fecha:now.toLocaleDateString("es-UY",{day:"2-digit",month:"2-digit",year:"numeric"})+" "+now.toLocaleTimeString("es-UY",{hour:"2-digit",minute:"2-digit"}),
     proyecto,presup,operario,desc,pct,
+    medOrig:medOrig||it.med,
+    medCorte:medCorte,
     chapa:it.mat+" "+it.esp,
-    mat:it.mat,med:it.med,tipo:it.tipo,pallet:it.pallet,
+    mat:it.mat,esp:it.esp,med:it.med,tipo:it.tipo,pallet:it.pallet,
     qty_descontada:descuento,stock_antes:stockAntes,stock_despues:stockDespues
   };
   historial.unshift(consumo);
+
   if(descuento>0){
     it.qty=stockDespues;
     if(it.qty===0){
-      // Guardar en agotados para mantener alerta, sacar del listado visible
       if(!window.agotados)window.agotados=[];
       window.agotados.push({mat:it.mat,esp:it.esp,pallet:it.pallet});
       items=items.filter(x=>x.id!==it.id);
     }
   }
+
+  // Generar recorte automático si corresponde
+  let recorteMsg="";
+  if(window._recorteGenerado&&descuento>0){
+    const r=window._recorteGenerado;
+    const nuevoRecorte={
+      id:nextId++,
+      pallet:it.pallet,
+      mat:it.mat,
+      esp:it.esp,
+      med:r.w+"x"+r.h,
+      tipo:"Recorte",
+      qty:1
+    };
+    items.push(nuevoRecorte);
+    recorteMsg=" · ✂️ Recorte "+r.w+"×"+r.h+"mm generado en Pallet "+it.pallet;
+  }
+
   cerrarModal();
   render();renderHistorial();
   guardarEnServidor();
-  showToast("✅ Consumo registrado — "+proyecto);
+  showToast("✅ Consumo registrado — "+proyecto+(recorteMsg||""));
 }
 
 // HISTORIAL
@@ -610,6 +722,8 @@ function renderHistorial(){
         <div class="hist-item"><span class="hist-item-lbl">% utilizado</span>
           <div class="pct-bar-wrap"><div class="pct-bar"><div class="pct-bar-fill" style="width:\${h.pct}%"></div></div><span style="font-size:13px;font-weight:700">\${h.pct}%</span></div>
         </div>
+        \${h.medCorte?\`<div class="hist-item"><span class="hist-item-lbl">Chapa original</span><span class="hist-item-val">\${h.medOrig||"—"} mm</span></div>\`:""}
+        \${h.medCorte?\`<div class="hist-item"><span class="hist-item-lbl">Medida del corte</span><span class="hist-item-val">\${h.medCorte} mm</span></div>\`:""}
         \${h.desc?\`<div class="hist-item" style="grid-column:1/-1"><span class="hist-item-lbl">Descripción</span><span class="hist-item-val">\${h.desc}</span></div>\`:""}
       </div>
       <div style="margin-top:10px;display:flex;justify-content:flex-end">
@@ -711,29 +825,20 @@ const server = http.createServer((req, res) => {
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
   if (req.method === 'GET' && req.url === '/') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(HTML);
-    return;
+    res.end(HTML); return;
   }
   if (req.method === 'GET' && req.url === '/stock') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(stockData || STOCK_INICIAL));
-    return;
+    res.end(JSON.stringify(stockData || STOCK_INICIAL)); return;
   }
   if (req.method === 'POST' && req.url === '/stock') {
     let b = '';
     req.on('data', c => b += c);
     req.on('end', () => {
-      try {
-        stockData = JSON.parse(b);
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        res.end('{"ok":true}');
-      } catch(e) { res.writeHead(400); res.end('error'); }
-    });
-    return;
+      try { stockData = JSON.parse(b); res.writeHead(200); res.end('{"ok":true}'); }
+      catch(e) { res.writeHead(400); res.end('error'); }
+    }); return;
   }
   res.writeHead(404); res.end('not found');
 });
-
-server.listen(PORT, () => {
-  console.log('Servidor Stock Chapas Fischer Montajes v3.2 - Puerto ' + PORT);
-});
+server.listen(PORT, () => console.log('Servidor Stock Chapas Fischer Montajes v4 - Puerto ' + PORT));
