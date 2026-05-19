@@ -20,49 +20,49 @@ async function conectarDB() {
 }
 
 const STOCK_INICIAL = {"items":[
-  {"id":1,"pallet":1,"mat":"Galvanizada","esp":"0.5mm","med":"1200x2500","tipo":"Entera","qty":7},
-  {"id":2,"pallet":1,"mat":"Galvanizada","esp":"0.8mm","med":"1200x1300","tipo":"Recorte","qty":6},
-  {"id":3,"pallet":1,"mat":"Galvanizada","esp":"2mm","med":"1200x2500","tipo":"Entera","qty":1},
-  {"id":4,"pallet":2,"mat":"Inox 304","esp":"0.5mm","med":"1250x2500","tipo":"Entera","qty":5},
-  {"id":5,"pallet":2,"mat":"Inox 304","esp":"1.2mm","med":"1300x1300","tipo":"Recorte","qty":1},
-  {"id":6,"pallet":2,"mat":"Inox 304","esp":"1mm","med":"1500","tipo":"—","qty":1},
-  {"id":7,"pallet":3,"mat":"Inox 304","esp":"2mm","med":"—","tipo":"Entera","qty":3},
-  {"id":8,"pallet":3,"mat":"Inox 304","esp":"2mm","med":"—","tipo":"Recorte grande","qty":1},
-  {"id":9,"pallet":3,"mat":"Inox 304","esp":"2.5mm","med":"1500x2300","tipo":"Recorte","qty":1},
-  {"id":10,"pallet":3,"mat":"Inox 316","esp":"2mm","med":"950x1500","tipo":"Recorte","qty":1},
-  {"id":11,"pallet":3,"mat":"Inox 316","esp":"2mm","med":"1500x1500","tipo":"Recorte","qty":1},
-  {"id":12,"pallet":4,"mat":"Inox 304","esp":"1.2mm","med":"—","tipo":"—","qty":3},
-  {"id":13,"pallet":5,"mat":"Inox 304","esp":"4mm","med":"1000x1500","tipo":"Recorte","qty":1},
-  {"id":14,"pallet":5,"mat":"Inox 304","esp":"5mm","med":"—","tipo":"—","qty":1},
-  {"id":15,"pallet":5,"mat":"Inox 304","esp":"6mm","med":"900x1300","tipo":"Recorte","qty":1},
-  {"id":16,"pallet":5,"mat":"Inox 304","esp":"10mm","med":"600x1100","tipo":"Recorte","qty":1},
-  {"id":17,"pallet":6,"mat":"Acero Carbono","esp":"1.5mm","med":"—","tipo":"—","qty":1},
-  {"id":18,"pallet":6,"mat":"Acero Carbono","esp":"2mm","med":"760x1500","tipo":"Recorte","qty":1},
-  {"id":19,"pallet":6,"mat":"Acero Carbono","esp":"3mm","med":"1200x1500","tipo":"Recorte","qty":1},
-  {"id":20,"pallet":6,"mat":"Acero Carbono","esp":"5mm","med":"1500x1500","tipo":"Recorte","qty":1},
-  {"id":21,"pallet":6,"mat":"Acero Carbono","esp":"6mm","med":"200x1500","tipo":"Recorte","qty":1},
-  {"id":22,"pallet":6,"mat":"Acero Carbono","esp":"6mm","med":"1100x1500","tipo":"Recorte","qty":1},
-  {"id":23,"pallet":7,"mat":"Acero Corten","esp":"2mm","med":"—","tipo":"Entera","qty":1},
-  {"id":24,"pallet":7,"mat":"Acero Corten","esp":"2mm","med":"1200x1500","tipo":"Recorte","qty":1},
-  {"id":25,"pallet":7,"mat":"Acero Corten","esp":"3mm","med":"—","tipo":"Entera","qty":1},
-  {"id":26,"pallet":7,"mat":"Acero Corten","esp":"3mm","med":"1470x1220","tipo":"Recorte","qty":1},
-  {"id":27,"pallet":8,"mat":"Acero Carbono","esp":"1.5mm","med":"—","tipo":"Entera","qty":2},
-  {"id":28,"pallet":8,"mat":"Acero Carbono","esp":"2mm","med":"—","tipo":"Entera","qty":4},
-  {"id":29,"pallet":8,"mat":"Acero Descapado","esp":"1.5mm","med":"—","tipo":"Entera","qty":2},
-  {"id":30,"pallet":8,"mat":"Acero Descapado","esp":"2mm","med":"—","tipo":"Entera","qty":2},
-  {"id":31,"pallet":8,"mat":"Acero Descapado","esp":"2mm","med":"1000x2000","tipo":"Recorte","qty":1},
-  {"id":32,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"—","tipo":"Entera","qty":2},
-  {"id":33,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"2000x460","tipo":"Recorte","qty":1},
-  {"id":34,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"1220x1000","tipo":"Recorte","qty":1},
-  {"id":35,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"1225x920","tipo":"Recorte","qty":1},
-  {"id":36,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"2070x450","tipo":"Recorte","qty":1},
-  {"id":37,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"1220x655","tipo":"Recorte","qty":1},
-  {"id":38,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"2350x460","tipo":"Recorte","qty":1},
-  {"id":39,"pallet":9,"mat":"Acero Carbono","esp":"6mm","med":"1500x1500","tipo":"Entera","qty":1},
-  {"id":40,"pallet":9,"mat":"Acero Carbono","esp":"6mm","med":"—","tipo":"Entera","qty":1},
-  {"id":41,"pallet":9,"mat":"Acero Carbono","esp":"8mm","med":"—","tipo":"Entera","qty":1},
-  {"id":42,"pallet":9,"mat":"Acero Carbono","esp":"10mm","med":"—","tipo":"Entera","qty":1},
-  {"id":43,"pallet":9,"mat":"Acero Carbono","esp":"12mm","med":"—","tipo":"Entera","qty":1}
+  {"id":1,"pallet":1,"mat":"Galvanizada","esp":"0.5mm","med":"1200x2500","tipo":"Entera","qty":7,"precio":0.89},
+  {"id":2,"pallet":1,"mat":"Galvanizada","esp":"0.8mm","med":"1200x1300","tipo":"Recorte","qty":6,"precio":0.89},
+  {"id":3,"pallet":1,"mat":"Galvanizada","esp":"2mm","med":"1200x2500","tipo":"Entera","qty":1,"precio":0.89},
+  {"id":4,"pallet":2,"mat":"Inox 304","esp":"0.5mm","med":"1250x2500","tipo":"Entera","qty":5,"precio":3.74},
+  {"id":5,"pallet":2,"mat":"Inox 304","esp":"1.2mm","med":"1300x1300","tipo":"Recorte","qty":1,"precio":3.74},
+  {"id":6,"pallet":2,"mat":"Inox 304","esp":"1mm","med":"1500","tipo":"—","qty":1,"precio":3.74},
+  {"id":7,"pallet":3,"mat":"Inox 304","esp":"2mm","med":"—","tipo":"Entera","qty":3,"precio":3.74},
+  {"id":8,"pallet":3,"mat":"Inox 304","esp":"2mm","med":"—","tipo":"Recorte grande","qty":1,"precio":3.74},
+  {"id":9,"pallet":3,"mat":"Inox 304","esp":"2.5mm","med":"1500x2300","tipo":"Recorte","qty":1,"precio":3.74},
+  {"id":10,"pallet":3,"mat":"Inox 316","esp":"2mm","med":"950x1500","tipo":"Recorte","qty":1,"precio":3.74},
+  {"id":11,"pallet":3,"mat":"Inox 316","esp":"2mm","med":"1500x1500","tipo":"Recorte","qty":1,"precio":3.74},
+  {"id":12,"pallet":4,"mat":"Inox 304","esp":"1.2mm","med":"—","tipo":"—","qty":3,"precio":3.74},
+  {"id":13,"pallet":5,"mat":"Inox 304","esp":"4mm","med":"1000x1500","tipo":"Recorte","qty":1,"precio":4.30},
+  {"id":14,"pallet":5,"mat":"Inox 304","esp":"5mm","med":"—","tipo":"—","qty":1,"precio":4.30},
+  {"id":15,"pallet":5,"mat":"Inox 304","esp":"6mm","med":"900x1300","tipo":"Recorte","qty":1,"precio":4.30},
+  {"id":16,"pallet":5,"mat":"Inox 304","esp":"10mm","med":"600x1100","tipo":"Recorte","qty":1,"precio":4.30},
+  {"id":17,"pallet":6,"mat":"Acero Carbono","esp":"1.5mm","med":"—","tipo":"—","qty":1,"precio":0.89},
+  {"id":18,"pallet":6,"mat":"Acero Carbono","esp":"2mm","med":"760x1500","tipo":"Recorte","qty":1,"precio":0.89},
+  {"id":19,"pallet":6,"mat":"Acero Carbono","esp":"3mm","med":"1200x1500","tipo":"Recorte","qty":1,"precio":0.89},
+  {"id":20,"pallet":6,"mat":"Acero Carbono","esp":"5mm","med":"1500x1500","tipo":"Recorte","qty":1,"precio":0.89},
+  {"id":21,"pallet":6,"mat":"Acero Carbono","esp":"6mm","med":"200x1500","tipo":"Recorte","qty":1,"precio":0.89},
+  {"id":22,"pallet":6,"mat":"Acero Carbono","esp":"6mm","med":"1100x1500","tipo":"Recorte","qty":1,"precio":0.89},
+  {"id":23,"pallet":7,"mat":"Acero Corten","esp":"2mm","med":"—","tipo":"Entera","qty":1,"precio":1.74},
+  {"id":24,"pallet":7,"mat":"Acero Corten","esp":"2mm","med":"1200x1500","tipo":"Recorte","qty":1,"precio":1.74},
+  {"id":25,"pallet":7,"mat":"Acero Corten","esp":"3mm","med":"—","tipo":"Entera","qty":1,"precio":1.74},
+  {"id":26,"pallet":7,"mat":"Acero Corten","esp":"3mm","med":"1470x1220","tipo":"Recorte","qty":1,"precio":1.74},
+  {"id":27,"pallet":8,"mat":"Acero Carbono","esp":"1.5mm","med":"—","tipo":"Entera","qty":2,"precio":0.89},
+  {"id":28,"pallet":8,"mat":"Acero Carbono","esp":"2mm","med":"—","tipo":"Entera","qty":4,"precio":0.89},
+  {"id":29,"pallet":8,"mat":"Acero Descapado","esp":"1.5mm","med":"—","tipo":"Entera","qty":2,"precio":0.89},
+  {"id":30,"pallet":8,"mat":"Acero Descapado","esp":"2mm","med":"—","tipo":"Entera","qty":2,"precio":0.89},
+  {"id":31,"pallet":8,"mat":"Acero Descapado","esp":"2mm","med":"1000x2000","tipo":"Recorte","qty":1,"precio":0.89},
+  {"id":32,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"—","tipo":"Entera","qty":2,"precio":0.89},
+  {"id":33,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"2000x460","tipo":"Recorte","qty":1,"precio":0.89},
+  {"id":34,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"1220x1000","tipo":"Recorte","qty":1,"precio":0.89},
+  {"id":35,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"1225x920","tipo":"Recorte","qty":1,"precio":0.89},
+  {"id":36,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"2070x450","tipo":"Recorte","qty":1,"precio":0.89},
+  {"id":37,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"1220x655","tipo":"Recorte","qty":1,"precio":0.89},
+  {"id":38,"pallet":8,"mat":"Acero Descapado","esp":"3mm","med":"2350x460","tipo":"Recorte","qty":1,"precio":0.89},
+  {"id":39,"pallet":9,"mat":"Acero Carbono","esp":"6mm","med":"1500x1500","tipo":"Entera","qty":1,"precio":0.89},
+  {"id":40,"pallet":9,"mat":"Acero Carbono","esp":"6mm","med":"—","tipo":"Entera","qty":1,"precio":0.89},
+  {"id":41,"pallet":9,"mat":"Acero Carbono","esp":"8mm","med":"—","tipo":"Entera","qty":1,"precio":0.89},
+  {"id":42,"pallet":9,"mat":"Acero Carbono","esp":"10mm","med":"—","tipo":"Entera","qty":1,"precio":0.89},
+  {"id":43,"pallet":9,"mat":"Acero Carbono","esp":"12mm","med":"—","tipo":"Entera","qty":1,"precio":0.89}
 ],"nextId":44,"historial":[],"agotados":[],"ts":1700000000000};
 
 async function leerStock() {
@@ -458,6 +458,10 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
               <div style="font-size:11px;color:#9e9b94">Sobrante</div>
               <div style="font-size:14px;font-weight:700" id="calc-sobre">—</div>
             </div>
+            <div style="background:#e6f4e6;border-radius:6px;padding:8px;text-align:center;grid-column:1/-1">
+              <div style="font-size:11px;color:#1e5c1e">Costo estimado del corte</div>
+              <div style="font-size:16px;font-weight:700;color:#1e5c1e" id="calc-costo">—</div>
+            </div>
           </div>
           <div id="recorte-aviso" style="display:none;background:#e6f4e6;border:1px solid #4caf50;border-radius:6px;padding:10px;font-size:13px;color:#1e5c1e">
             ✂️ <strong>Se va a generar un recorte automático</strong> con el sobrante
@@ -521,7 +525,7 @@ async function cargarDesdeServidor(){
     const data=await r.json();
     if(data&&data.items){items=data.items;nextId=data.nextId||100;historial=data.historial||[];actualizarFecha(data.ts);}
     setSyncStatus("ok","Sincronizado ✓");
-    render();renderHistorial();
+    inicializarPrecios();render();renderHistorial();
   }catch(e){
     setSyncStatus("error","⚠️ Sin conexión al servidor");
     setTimeout(cargarDesdeServidor,8000);
@@ -572,12 +576,13 @@ function render(){
     if(!rows.length)return;any=true;
     const hasCrit=rows.some(x=>getStatus(x.qty)==="crit"),hasWarn=rows.some(x=>getStatus(x.qty)==="warn");
     html+=\`<div class="pallet-section"><div class="pallet-header"><span>📦</span><span class="pallet-num">Pallet \${p}</span>\${hasCrit?\`<span class="pallet-badge pb-crit">🔴 Sin stock</span>\`:""}\${hasWarn&&!hasCrit?\`<span class="pallet-badge pb-warn">⚠️ Stock bajo</span>\`:""}<span class="pallet-count">\${rows.length} ítem\${rows.length!==1?"s":""}</span></div>
-    <table><thead><tr><th>Material</th><th>Espesor</th><th>Medidas</th><th>Tipo</th><th>Cantidad</th><th>Estado</th><th></th></tr></thead><tbody>
+    <table><thead><tr><th>Material</th><th>Espesor</th><th>Medidas</th><th>Tipo</th><th>Precio USD/kg</th><th>Cantidad</th><th>Estado</th><th></th></tr></thead><tbody>
     \${rows.map(it=>{const s=getStatus(it.qty);return\`<tr>
       <td><span class="mat-tag \${matClass(it.mat)}">\${it.mat}</span></td>
       <td style="font-weight:600">\${it.esp}</td>
       <td style="color:var(--text2);font-size:12px">\${it.med}</td>
       <td style="color:var(--text2);font-size:12px">\${it.tipo}</td>
+      <td><input type="number" min="0" step="0.01" placeholder="—" value="\${it.precio||''}" onchange="updatePrecio(\${it.id},this.value)" style="width:70px;height:28px;text-align:center;font-size:13px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text)"><span style="font-size:11px;color:var(--text3)"> USD</span></td>
       <td><div class="qty-wrap">
         <button class="qty-btn" onclick="abrirModalConsumo(\${it.id})" title="Registrar consumo">−</button>
         <input class="qty-input \${s==="ok"?"":s}" type="number" min="0" value="\${it.qty}" onchange="updateQty(\${it.id},this.value)">
@@ -597,6 +602,39 @@ function render(){
 
 function changeQty(id,d){const it=items.find(x=>x.id===id);if(it){it.qty=Math.max(0,it.qty+d);render();guardarEnServidor();}}
 function updateQty(id,v){const it=items.find(x=>x.id===id);if(it){it.qty=Math.max(0,parseInt(v)||0);render();guardarEnServidor();}}
+// Precios USD/kg por defecto según material y espesor
+function getPrecioDefault(mat, esp) {
+  const espNum = parseFloat(esp) || 0;
+  const ml = mat.toLowerCase();
+  if (ml.includes("corten")) return 1.74;
+  if (ml.includes("inox")) return espNum >= 4 ? 4.30 : 3.74;
+  if (ml.includes("galvan") || ml.includes("carbon") || ml.includes("descap")) return 0.89;
+  return 0;
+}
+
+// Densidades kg/m³ por material
+const DENSIDAD = {
+  "Inox 304": 7900, "Inox 316": 7900, "Inox 430": 7900,
+  "Galvanizada": 7850, "Acero Carbono": 7850,
+  "Acero Descapado": 7850, "Acero Corten": 7850
+};
+
+function updatePrecio(id, val) {
+  const it = items.find(x => x.id === id);
+  if (it) { it.precio = parseFloat(val) || 0; guardarEnServidor(); }
+}
+
+function calcularCostoConsumo(mat, esp, ancho, largo, precioPorKg) {
+  if (!ancho || !largo || !precioPorKg) return null;
+  const espNum = parseFloat(esp);
+  if (isNaN(espNum)) return null;
+  const densidad = DENSIDAD[mat] || 7850;
+  const areaM2 = (ancho / 1000) * (largo / 1000);
+  const kg = areaM2 * (espNum / 1000) * densidad;
+  const costo = kg * precioPorKg;
+  return { kg: Math.round(kg * 100) / 100, costo: Math.round(costo * 100) / 100 };
+}
+
 function eliminarUnidad(id){
   const it=items.find(x=>x.id===id);
   if(!it)return;
@@ -644,6 +682,17 @@ function calcularRecorte(){
   res.style.display="block";
   document.getElementById("calc-usado").textContent=ancho+"×"+largo+" mm";
   window._medCorteCalculada=ancho+"x"+largo;
+
+  // Calcular costo
+  const itActual=items.find(x=>x.id===modalItemId);
+  const costEl=document.getElementById("calc-costo");
+  if(itActual&&itActual.precio&&itActual.precio>0){
+    const calc=calcularCostoConsumo(itActual.mat,itActual.esp,ancho,largo,itActual.precio);
+    if(calc) costEl.textContent=calc.kg+" kg · USD "+calc.costo.toFixed(2);
+    else costEl.textContent="—";
+  } else {
+    costEl.textContent="Sin precio cargado";
+  }
 
   if(!orig){
     document.getElementById("calc-pct").textContent="—";
@@ -723,7 +772,8 @@ function addRow(){
   const ms=document.getElementById("n-med-std").value,mc=document.getElementById("n-med-custom").value.trim(),med=mc||ms||"—";
   const t=document.getElementById("n-tipo").value,q=parseInt(document.getElementById("n-qty").value)||0;
   if(!m)return;
-  items.push({id:nextId++,pallet:p,mat:m,esp:e||"—",med,tipo:t,qty:q});
+  const precioDefault=getPrecioDefault(m,e||"0");
+  items.push({id:nextId++,pallet:p,mat:m,esp:e||"—",med,tipo:t,qty:q,precio:precioDefault});
   document.getElementById("n-med-custom").value="";document.getElementById("n-qty").value="";
   render();guardarEnServidor();showToast("✅ Chapa agregada al Pallet "+p);
 }
@@ -766,6 +816,19 @@ function confirmarConsumo(){
   const pct=window._tipoUso==="total"?100:(window._pctCalculado||0);
   const medCorte=window._tipoUso==="total"?it.med:(window._medCorteCalculada||"");
 
+  // Calcular costo
+  let costoConsumo=null;
+  if(it.precio&&it.precio>0){
+    if(window._tipoUso==="total"&&it.med&&it.med!=="—"){
+      const orig=parseMed(it.med);
+      if(orig) costoConsumo=calcularCostoConsumo(it.mat,it.esp,orig.w,orig.h,it.precio);
+    } else if(window._tipoUso==="parcial"){
+      const ancho=parseFloat(document.getElementById("c-ancho").value);
+      const largo=parseFloat(document.getElementById("c-largo").value);
+      if(ancho&&largo) costoConsumo=calcularCostoConsumo(it.mat,it.esp,ancho,largo,it.precio);
+    }
+  }
+
   const now=new Date();
   const consumo={
     id:Date.now(),
@@ -776,7 +839,10 @@ function confirmarConsumo(){
     medCorte:medCorte,
     chapa:it.mat+" "+it.esp,
     mat:it.mat,esp:it.esp,med:it.med,tipo:it.tipo,pallet:it.pallet,
-    qty_descontada:descuento,stock_antes:stockAntes,stock_despues:stockDespues
+    qty_descontada:descuento,stock_antes:stockAntes,stock_despues:stockDespues,
+    precio_usd_kg:it.precio||0,
+    costo_usd:costoConsumo?costoConsumo.costo:null,
+    kg_usados:costoConsumo?costoConsumo.kg:null
   };
   historial.unshift(consumo);
 
@@ -809,7 +875,8 @@ function confirmarConsumo(){
   cerrarModal();
   render();renderHistorial();
   guardarEnServidor();
-  showToast("✅ Consumo registrado — "+proyecto+(recorteMsg||""));
+  const costoMsg=costoConsumo?" · USD "+costoConsumo.costo.toFixed(2):"";
+  showToast("✅ Consumo registrado — "+proyecto+costoMsg+(recorteMsg||""));
 }
 
 // HISTORIAL
@@ -837,6 +904,7 @@ function renderHistorial(){
         <div class="hist-item"><span class="hist-item-lbl">Pallet</span><span class="hist-item-val">📦 Pallet \${h.pallet}</span></div>
         <div class="hist-item"><span class="hist-item-lbl">Tipo</span><span class="hist-item-val">\${h.tipo}</span></div>
         <div class="hist-item"><span class="hist-item-lbl">Descuento stock</span><span class="hist-item-val">\${h.qty_descontada} unidad\${h.qty_descontada!==1?"es":""} (\${h.stock_antes}→\${h.stock_despues})</span></div>
+        \${h.costo_usd!=null?\`<div class="hist-item"><span class="hist-item-lbl">💰 Costo material</span><span class="hist-item-val" style="font-weight:700;color:#1e5c1e">USD \${h.costo_usd.toFixed(2)} · \${h.kg_usados} kg</span></div>\`:""}
         <div class="hist-item"><span class="hist-item-lbl">% utilizado</span>
           <div class="pct-bar-wrap"><div class="pct-bar"><div class="pct-bar-fill" style="width:\${h.pct}%"></div></div><span style="font-size:13px;font-weight:700">\${h.pct}%</span></div>
         </div>
@@ -926,7 +994,18 @@ function verificarClave(){
     document.getElementById("login-screen").style.display="none";
     document.getElementById("app").style.display="block";
     sessionStorage.setItem("auth","ok");
-    cargarDesdeServidor();
+    // Pre-cargar precios default en items que no tienen precio
+function inicializarPrecios(){
+  let cambio=false;
+  items.forEach(it=>{
+    if(!it.precio||it.precio===0){
+      it.precio=getPrecioDefault(it.mat,it.esp);
+      cambio=true;
+    }
+  });
+  if(cambio)guardarEnServidor();
+}
+cargarDesdeServidor();
   } else {
     document.getElementById("login-error").textContent="Clave incorrecta, intentá de nuevo";
     document.getElementById("login-input").value="";
