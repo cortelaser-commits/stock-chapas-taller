@@ -13,9 +13,9 @@ async function conectarDB() {
     const client = new MongoClient(MONGO_URL);
     await client.connect();
     db = client.db(DB_NAME);
-    console.log('✅ Conectado a MongoDB Atlas');
+    console.log('Conectado a MongoDB Atlas');
   } catch(e) {
-    console.log('❌ Error conectando a MongoDB:', e.message);
+    console.log('Error conectando a MongoDB:', e.message);
     setTimeout(conectarDB, 5000);
   }
 }
@@ -71,10 +71,7 @@ async function leerStock() {
   try {
     const doc = await db.collection(COL_NAME).findOne({ _id: 'stock' });
     return doc ? doc.data : STOCK_INICIAL;
-  } catch(e) {
-    console.log('Error leyendo:', e.message);
-    return STOCK_INICIAL;
-  }
+  } catch(e) { return STOCK_INICIAL; }
 }
 
 async function guardarStock(data) {
@@ -86,10 +83,7 @@ async function guardarStock(data) {
       { upsert: true }
     );
     return true;
-  } catch(e) {
-    console.log('Error guardando:', e.message);
-    return false;
-  }
+  } catch(e) { return false; }
 }
 
 const HTML = `<!DOCTYPE html>
@@ -568,7 +562,10 @@ function render(){
         <button class="qty-btn" onclick="changeQty(\${it.id},1)">+</button>
       </div></td>
       <td>\${badgeHTML(it.qty)}</td>
-      <td><button class="btn-del" onclick="deleteRow(\${it.id})">🗑</button></td>
+      <td style="white-space:nowrap">
+        <button class="btn-del" onclick="eliminarUnidad(\${it.id})" title="Quitar 1 unidad sin consumo" style="font-size:11px;padding:2px 6px">🗑×1</button>
+        <button class="btn-del" onclick="deleteRow(\${it.id})" title="Eliminar fila completa" style="font-size:11px;padding:2px 6px;margin-left:2px">🗑Fila</button>
+      </td>
     </tr>\`;}).join("")}
     </tbody></table></div>\`;
   });
@@ -578,7 +575,20 @@ function render(){
 
 function changeQty(id,d){const it=items.find(x=>x.id===id);if(it){it.qty=Math.max(0,it.qty+d);render();guardarEnServidor();}}
 function updateQty(id,v){const it=items.find(x=>x.id===id);if(it){it.qty=Math.max(0,parseInt(v)||0);render();guardarEnServidor();}}
-function deleteRow(id){if(confirm("¿Eliminar esta chapa del stock?")){items=items.filter(x=>x.id!==id);render();guardarEnServidor();showToast("🗑 Chapa eliminada");}}
+function eliminarUnidad(id){
+  const it=items.find(x=>x.id===id);
+  if(!it)return;
+  if(!confirm("¿Quitar 1 unidad de "+it.mat+" "+it.esp+" sin registrar consumo?"))return;
+  it.qty=Math.max(0,it.qty-1);
+  if(it.qty===0){
+    if(!window.agotados)window.agotados=[];
+    window.agotados.push({mat:it.mat,esp:it.esp,pallet:it.pallet});
+    items=items.filter(x=>x.id!==it.id);
+  }
+  render();guardarEnServidor();
+  showToast("🗑 1 unidad eliminada del stock");
+}
+function deleteRow(id){if(confirm("¿Eliminar toda esta fila del stock?")){items=items.filter(x=>x.id!==id);render();guardarEnServidor();showToast("🗑 Chapa eliminada");}}
 
 function parseMed(str){
   const parts=(str||"").replace(/[xX×]/,"x").split("x").map(s=>parseFloat(s.trim()));
@@ -772,15 +782,25 @@ function renderHistorial(){
         \${h.desc?\`<div class="hist-item" style="grid-column:1/-1"><span class="hist-item-lbl">Descripción</span><span class="hist-item-val">\${h.desc}</span></div>\`:""}
       </div>
       <div style="margin-top:10px;display:flex;justify-content:flex-end">
-        \${h.anulado
-          ? \`<span style="font-size:12px;color:#999;font-style:italic">🚫 Consumo anulado</span>\`
-          : \`<button onclick="anularConsumo(\${h.id})" style="height:28px;padding:0 12px;background:none;border:1px solid #e04040;border-radius:6px;color:#b22020;font-size:12px;font-weight:600;cursor:pointer">↩ Anular consumo</button>\`
-        }
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          \${h.anulado
+            ? \`<span style="font-size:12px;color:#999;font-style:italic">🚫 Anulado</span>\`
+            : \`<button onclick="anularConsumo(\${h.id})" style="height:28px;padding:0 12px;background:none;border:1px solid #e04040;border-radius:6px;color:#b22020;font-size:12px;font-weight:600;cursor:pointer">↩ Anular</button>\`
+          }
+          <button onclick="eliminarConsumo(\${h.id})" style="height:28px;padding:0 12px;background:none;border:1px solid #ddd;border-radius:6px;color:#888;font-size:12px;cursor:pointer" title="Eliminar registro sin tocar el stock">🗑 Eliminar registro</button>
+        </div>
       </div>
     </div>
   \`).join("");
 }
 
+function eliminarConsumo(id){
+  if(!confirm("¿Eliminar este registro del historial? El stock NO se modifica."))return;
+  historial=historial.filter(x=>x.id!==id);
+  renderHistorial();
+  guardarEnServidor();
+  showToast("🗑 Registro eliminado del historial");
+}
 function anularConsumo(id){
   const h=historial.find(x=>x.id===id);
   if(!h||h.anulado)return;
@@ -868,18 +888,15 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
-
   if (req.method === 'GET' && req.url === '/') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(HTML); return;
   }
-
   if (req.method === 'GET' && req.url === '/stock') {
     const data = await leerStock();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data)); return;
   }
-
   if (req.method === 'POST' && req.url === '/stock') {
     let b = '';
     req.on('data', c => b += c);
@@ -887,20 +904,15 @@ const server = http.createServer(async (req, res) => {
       try {
         const data = JSON.parse(b);
         await guardarStock(data);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end('{"ok":true}');
-      } catch(e) {
-        res.writeHead(400); res.end('error');
-      }
+        res.writeHead(200); res.end('{"ok":true}');
+      } catch(e) { res.writeHead(400); res.end('error'); }
     }); return;
   }
-
   res.writeHead(404); res.end('not found');
 });
 
 conectarDB().then(() => {
   server.listen(PORT, () => {
     console.log('Servidor Stock Chapas Fischer Montajes - Puerto ' + PORT);
-    console.log('Base de datos: MongoDB Atlas');
   });
 });
