@@ -1,6 +1,25 @@
 const http = require('http');
+const { MongoClient } = require('mongodb');
+
 const PORT = process.env.PORT || 3000;
-let stockData = null;
+const MONGO_URL = process.env.MONGO_URL || 'mongodb+srv://cortelaser_db_user:Fede1989@cluster0.fj6pnvk.mongodb.net/stockchapas?appName=Cluster0';
+const DB_NAME = 'stockchapas';
+const COL_NAME = 'stock';
+
+let db = null;
+
+async function conectarDB() {
+  try {
+    const client = new MongoClient(MONGO_URL);
+    await client.connect();
+    db = client.db(DB_NAME);
+    console.log('✅ Conectado a MongoDB Atlas');
+  } catch(e) {
+    console.log('❌ Error conectando a MongoDB:', e.message);
+    setTimeout(conectarDB, 5000);
+  }
+}
+
 const STOCK_INICIAL = {"items":[
   {"id":1,"pallet":1,"mat":"Galvanizada","esp":"0.5mm","med":"1200x2500","tipo":"Entera","qty":7},
   {"id":2,"pallet":1,"mat":"Galvanizada","esp":"0.8mm","med":"1200x1300","tipo":"Recorte","qty":6},
@@ -46,6 +65,32 @@ const STOCK_INICIAL = {"items":[
   {"id":42,"pallet":9,"mat":"Acero Carbono","esp":"10mm","med":"—","tipo":"Entera","qty":1},
   {"id":43,"pallet":9,"mat":"Acero Carbono","esp":"12mm","med":"—","tipo":"Entera","qty":1}
 ],"nextId":44,"historial":[],"agotados":[],"ts":1700000000000};
+
+async function leerStock() {
+  if (!db) return STOCK_INICIAL;
+  try {
+    const doc = await db.collection(COL_NAME).findOne({ _id: 'stock' });
+    return doc ? doc.data : STOCK_INICIAL;
+  } catch(e) {
+    console.log('Error leyendo:', e.message);
+    return STOCK_INICIAL;
+  }
+}
+
+async function guardarStock(data) {
+  if (!db) return false;
+  try {
+    await db.collection(COL_NAME).replaceOne(
+      { _id: 'stock' },
+      { _id: 'stock', data, updatedAt: new Date() },
+      { upsert: true }
+    );
+    return true;
+  } catch(e) {
+    console.log('Error guardando:', e.message);
+    return false;
+  }
+}
 
 const HTML = `<!DOCTYPE html>
 <html lang="es">
@@ -818,27 +863,44 @@ if(sessionStorage.getItem("auth")==="ok"){
 </html>
 `;
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+
   if (req.method === 'GET' && req.url === '/') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(HTML); return;
   }
+
   if (req.method === 'GET' && req.url === '/stock') {
+    const data = await leerStock();
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(stockData || STOCK_INICIAL)); return;
+    res.end(JSON.stringify(data)); return;
   }
+
   if (req.method === 'POST' && req.url === '/stock') {
     let b = '';
     req.on('data', c => b += c);
-    req.on('end', () => {
-      try { stockData = JSON.parse(b); res.writeHead(200); res.end('{"ok":true}'); }
-      catch(e) { res.writeHead(400); res.end('error'); }
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(b);
+        await guardarStock(data);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end('{"ok":true}');
+      } catch(e) {
+        res.writeHead(400); res.end('error');
+      }
     }); return;
   }
+
   res.writeHead(404); res.end('not found');
 });
-server.listen(PORT, () => console.log('Servidor Stock Chapas Fischer Montajes v4 - Puerto ' + PORT));
+
+conectarDB().then(() => {
+  server.listen(PORT, () => {
+    console.log('Servidor Stock Chapas Fischer Montajes - Puerto ' + PORT);
+    console.log('Base de datos: MongoDB Atlas');
+  });
+});
