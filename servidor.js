@@ -15,7 +15,7 @@ async function conectarDB() {
     db = client.db(DB_NAME);
     console.log('Conectado a MongoDB Atlas');
   } catch(e) {
-    console.log('Error conectando a MongoDB:', e.message);
+    console.log('Error conectando:', e.message);
     setTimeout(conectarDB, 5000);
   }
 }
@@ -412,15 +412,15 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
     <div style="background:#f0eeea;border-radius:8px;padding:14px;margin:12px 0">
       <div style="font-size:12px;font-weight:700;color:#6b6860;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">📐 Medidas del corte</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="modal-field">
-          <label>Medida chapa original (mm)</label>
+        <div class="modal-field" id="campo-med-orig">
+          <label>Medida chapa original — Ancho × Largo (mm)</label>
           <input type="text" id="c-med-orig" placeholder="ej: 1220x2440" oninput="calcularRecorte()">
-          <span style="font-size:11px;color:#9e9b94">ancho x largo</span>
+          <span style="font-size:11px;color:#9e9b94">ancho × largo en milímetros</span>
         </div>
         <div class="modal-field">
-          <label>Medida del corte (mm)</label>
+          <label>Medida del corte — Ancho × Largo (mm)</label>
           <input type="text" id="c-med-corte" placeholder="ej: 800x1500" oninput="calcularRecorte()">
-          <span style="font-size:11px;color:#9e9b94">ancho x largo</span>
+          <span style="font-size:11px;color:#9e9b94">ancho × largo en milímetros</span>
         </div>
       </div>
       <div id="calc-result" style="margin-top:10px;display:none">
@@ -653,6 +653,15 @@ function abrirModalConsumo(id){
   document.getElementById("recorte-aviso").style.display="none";
   document.getElementById("recorte-descarte").style.display="none";
   window._recorteGenerado=null;
+
+  // Si es Entera con medida cargada, ocultar campo medida original
+  const campoMedOrig=document.getElementById("campo-med-orig");
+  if(it.tipo==="Entera"&&medOrig){
+    campoMedOrig.style.display="none";
+  } else {
+    campoMedOrig.style.display="block";
+  }
+
   document.getElementById("modal-consumo").classList.add("show");
   setTimeout(()=>document.getElementById("c-proyecto").focus(),100);
 }
@@ -912,7 +921,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 conectarDB().then(() => {
-  server.listen(PORT, () => {
-    console.log('Servidor Stock Chapas Fischer Montajes - Puerto ' + PORT);
-  });
+  server.listen(PORT, () => console.log('Servidor Stock Chapas Fischer Montajes - Puerto ' + PORT));
 });
