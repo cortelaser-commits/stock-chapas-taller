@@ -5,7 +5,6 @@ const PORT = process.env.PORT || 3000;
 const MONGO_URL = process.env.MONGO_URL || 'mongodb+srv://cortelaser_db_user:Fede1989@cluster0.fj6pnvk.mongodb.net/stockchapas?appName=Cluster0';
 const DB_NAME = 'stockchapas';
 const COL_NAME = 'stock';
-
 let db = null;
 
 async function conectarDB() {
@@ -410,40 +409,63 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
     </div>
 
     <div style="background:#f0eeea;border-radius:8px;padding:14px;margin:12px 0">
-      <div style="font-size:12px;font-weight:700;color:#6b6860;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">📐 Medidas del corte</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="modal-field" id="campo-med-orig">
-          <label>Medida chapa original — Ancho × Largo (mm)</label>
-          <input type="text" id="c-med-orig" placeholder="ej: 1220x2440" oninput="calcularRecorte()">
-          <span style="font-size:11px;color:#9e9b94">ancho × largo en milímetros</span>
-        </div>
-        <div class="modal-field">
-          <label>Medida del corte — Ancho × Largo (mm)</label>
-          <input type="text" id="c-med-corte" placeholder="ej: 800x1500" oninput="calcularRecorte()">
-          <span style="font-size:11px;color:#9e9b94">ancho × largo en milímetros</span>
+      <div style="font-size:12px;font-weight:700;color:#6b6860;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">📐 Uso de la chapa</div>
+
+      <!-- Medida original -->
+      <div style="background:#fff;border-radius:6px;padding:8px 12px;margin-bottom:12px;border:1px solid #ddd">
+        <span style="font-size:11px;color:#9e9b94;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:2px">Medida original</span>
+        <span id="info-med-orig-val" style="font-weight:700;font-size:14px">—</span>
+      </div>
+
+      <!-- Tipo de uso -->
+      <div class="modal-field" style="margin-bottom:12px">
+        <label>¿Cómo se usó la chapa?</label>
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <label style="flex:1;display:flex;align-items:center;gap:8px;cursor:pointer;background:#fff;border:2px solid #ddd;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:normal;text-transform:none;letter-spacing:0;color:#1a1917">
+            <input type="radio" name="tipo-uso" id="uso-total" value="total" onchange="cambiarTipoUso()" style="width:16px;height:16px;accent-color:#1a1917">
+            <div><div style="font-weight:600">Uso total</div><div style="font-size:11px;color:#9e9b94">Se usó la chapa completa</div></div>
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:8px;cursor:pointer;background:#fff;border:2px solid #ddd;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:normal;text-transform:none;letter-spacing:0;color:#1a1917">
+            <input type="radio" name="tipo-uso" id="uso-parcial" value="parcial" onchange="cambiarTipoUso()" style="width:16px;height:16px;accent-color:#1a1917">
+            <div><div style="font-weight:600">Recorte parcial</div><div style="font-size:11px;color:#9e9b94">Se usó solo una parte</div></div>
+          </label>
         </div>
       </div>
-      <div id="calc-result" style="margin-top:10px;display:none">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
-          <div style="background:#fff;border-radius:6px;padding:8px;text-align:center">
-            <div style="font-size:11px;color:#9e9b94">Área usada</div>
-            <div style="font-size:14px;font-weight:700;color:#1a1917" id="calc-usado">—</div>
+
+      <!-- Campos de medida del corte (solo para recorte parcial) -->
+      <div id="campos-corte" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="modal-field">
+            <label>Ancho del corte (mm)</label>
+            <input type="number" id="c-ancho" placeholder="ej: 800" min="1" oninput="calcularRecorte()" style="font-size:16px">
           </div>
-          <div style="background:#fff;border-radius:6px;padding:8px;text-align:center">
-            <div style="font-size:11px;color:#9e9b94">% utilizado</div>
-            <div style="font-size:14px;font-weight:700;color:#1a1917" id="calc-pct">—</div>
-          </div>
-          <div style="background:#fff;border-radius:6px;padding:8px;text-align:center">
-            <div style="font-size:11px;color:#9e9b94">Sobrante</div>
-            <div style="font-size:14px;font-weight:700" id="calc-sobre">—</div>
+          <div class="modal-field">
+            <label>Largo del corte (mm)</label>
+            <input type="number" id="c-largo" placeholder="ej: 1500" min="1" oninput="calcularRecorte()" style="font-size:16px">
           </div>
         </div>
-        <div id="recorte-aviso" style="display:none;background:#e6f4e6;border:1px solid #4caf50;border-radius:6px;padding:10px;font-size:13px;color:#1e5c1e">
-          ✂️ <strong>Se va a generar un recorte automático</strong> con el sobrante
-          <div style="margin-top:6px;font-size:12px" id="recorte-detalle"></div>
-        </div>
-        <div id="recorte-descarte" style="display:none;background:#fef3db;border:1px solid #EF9F27;border-radius:6px;padding:10px;font-size:13px;color:#633806">
-          ⚠️ El sobrante es menor al 10% — se descarta, no se guarda como recorte.
+        <div id="calc-result" style="display:none">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+            <div style="background:#fff;border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:11px;color:#9e9b94">Área usada</div>
+              <div style="font-size:14px;font-weight:700;color:#1a1917" id="calc-usado">—</div>
+            </div>
+            <div style="background:#fff;border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:11px;color:#9e9b94">% utilizado</div>
+              <div style="font-size:14px;font-weight:700;color:#1a1917" id="calc-pct">—</div>
+            </div>
+            <div style="background:#fff;border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:11px;color:#9e9b94">Sobrante</div>
+              <div style="font-size:14px;font-weight:700" id="calc-sobre">—</div>
+            </div>
+          </div>
+          <div id="recorte-aviso" style="display:none;background:#e6f4e6;border:1px solid #4caf50;border-radius:6px;padding:10px;font-size:13px;color:#1e5c1e">
+            ✂️ <strong>Se va a generar un recorte automático</strong> con el sobrante
+            <div style="margin-top:6px;font-size:12px" id="recorte-detalle"></div>
+          </div>
+          <div id="recorte-descarte" style="display:none;background:#fef3db;border:1px solid #EF9F27;border-radius:6px;padding:10px;font-size:13px;color:#633806">
+            ⚠️ El sobrante es menor al 10% — se descarta, no se guarda como recorte.
+          </div>
         </div>
       </div>
     </div>
@@ -596,17 +618,48 @@ function parseMed(str){
   return null;
 }
 
+function cambiarTipoUso(){
+  const total=document.getElementById("uso-total").checked;
+  const parcial=document.getElementById("uso-parcial").checked;
+  window._tipoUso=total?"total":"parcial";
+  document.getElementById("campos-corte").style.display=parcial?"block":"none";
+  document.getElementById("calc-result").style.display="none";
+  window._recorteGenerado=null;
+  if(total){
+    // Uso total = 100%
+    window._pctCalculado=100;
+    window._medCorteCalculada=null;
+  }
+}
+
 function calcularRecorte(){
-  const orig=parseMed(document.getElementById("c-med-orig").value);
-  const corte=parseMed(document.getElementById("c-med-corte").value);
+  const ancho=parseFloat(document.getElementById("c-ancho").value);
+  const largo=parseFloat(document.getElementById("c-largo").value);
+  if(!ancho||!largo||ancho<=0||largo<=0){
+    document.getElementById("calc-result").style.display="none";
+    return;
+  }
+  const orig=parseMed(window._medOrigItem);
   const res=document.getElementById("calc-result");
-  if(!orig||!corte){res.style.display="none";return;}
+  res.style.display="block";
+  document.getElementById("calc-usado").textContent=ancho+"×"+largo+" mm";
+  window._medCorteCalculada=ancho+"x"+largo;
+
+  if(!orig){
+    document.getElementById("calc-pct").textContent="—";
+    document.getElementById("calc-sobre").textContent="—";
+    document.getElementById("recorte-aviso").style.display="none";
+    document.getElementById("recorte-descarte").style.display="none";
+    window._pctCalculado=50; // sin medida original no podemos calcular
+    return;
+  }
+
   const areaOrig=orig.w*orig.h;
-  const areaCorte=corte.w*corte.h;
+  const areaCorte=ancho*largo;
   const pct=Math.min(100,Math.round(areaCorte/areaOrig*100));
   const sobrePct=100-pct;
-  document.getElementById("calc-result").style.display="block";
-  document.getElementById("calc-usado").textContent=corte.w+"×"+corte.h+" mm";
+  window._pctCalculado=pct;
+
   document.getElementById("calc-pct").textContent=pct+"%";
   const sobreEl=document.getElementById("calc-sobre");
   sobreEl.textContent=sobrePct+"%";
@@ -615,23 +668,17 @@ function calcularRecorte(){
   const aviso=document.getElementById("recorte-aviso");
   const descarte=document.getElementById("recorte-descarte");
   if(sobrePct>=10){
-    // Calcular medida del recorte sobrante (lado más largo de la diferencia)
-    let recW, recH;
-    if(orig.w>corte.w&&orig.h>corte.h){
-      // Corte interior — sobrante es el mayor lado
-      recW=orig.w; recH=orig.h-corte.h;
-    } else if(orig.w>corte.w){
-      recW=orig.w-corte.w; recH=orig.h;
-    } else {
-      recW=orig.w; recH=orig.h-corte.h;
-    }
-    recW=Math.round(recW); recH=Math.round(recH);
+    let recW,recH;
+    if(orig.w>ancho&&orig.h>largo){recW=orig.w;recH=orig.h-largo;}
+    else if(orig.w>ancho){recW=orig.w-ancho;recH=orig.h;}
+    else{recW=orig.w;recH=orig.h-largo;}
+    recW=Math.round(recW);recH=Math.round(recH);
     document.getElementById("recorte-detalle").textContent=recW+"×"+recH+" mm · "+sobrePct+"% del área original";
     window._recorteGenerado={w:recW,h:recH,pct:sobrePct};
-    aviso.style.display="block"; descarte.style.display="none";
+    aviso.style.display="block";descarte.style.display="none";
   } else {
     window._recorteGenerado=null;
-    aviso.style.display="none"; descarte.style.display="block";
+    aviso.style.display="none";descarte.style.display="block";
   }
 }
 
@@ -645,22 +692,26 @@ function abrirModalConsumo(id){
   document.getElementById("c-operario").value="";
   document.getElementById("c-desc").value="";
   document.getElementById("c-qty").value="1";
-  // Pre-cargar medida original si la chapa la tiene
-  const medOrig=it.med&&it.med!=="—"?it.med:"";
-  document.getElementById("c-med-orig").value=medOrig;
-  document.getElementById("c-med-corte").value="";
+  // Mostrar medida original
+  const medOrig=it.med&&it.med!=="—"?it.med:"Sin medida cargada";
+  document.getElementById("info-med-orig-val").textContent=medOrig+" mm";
+  window._medOrigItem=it.med&&it.med!=="—"?it.med:null;
+
+  // Resetear campos
+  document.getElementById("c-ancho").value="";
+  document.getElementById("c-largo").value="";
+  document.getElementById("campos-corte").style.display="none";
   document.getElementById("calc-result").style.display="none";
   document.getElementById("recorte-aviso").style.display="none";
   document.getElementById("recorte-descarte").style.display="none";
+  document.getElementById("uso-total").checked=false;
+  document.getElementById("uso-parcial").checked=false;
+  // Resetear estilos de radio
+  document.querySelectorAll("label[style*='border']").forEach(l=>{
+    if(l.querySelector("input[name=tipo-uso]")) l.style.borderColor="#ddd";
+  });
   window._recorteGenerado=null;
-
-  // Si es Entera con medida cargada, ocultar campo medida original
-  const campoMedOrig=document.getElementById("campo-med-orig");
-  if(it.tipo==="Entera"&&medOrig){
-    campoMedOrig.style.display="none";
-  } else {
-    campoMedOrig.style.display="block";
-  }
+  window._tipoUso=null;
 
   document.getElementById("modal-consumo").classList.add("show");
   setTimeout(()=>document.getElementById("c-proyecto").focus(),100);
@@ -700,25 +751,28 @@ function confirmarConsumo(){
   const operario=document.getElementById("c-operario").value.trim();
   if(!proyecto){document.getElementById("c-proyecto").focus();showToast("⚠️ Ingresá el proyecto");return;}
   if(!operario){document.getElementById("c-operario").focus();showToast("⚠️ Ingresá el operario");return;}
+  if(!window._tipoUso){showToast("⚠️ Seleccioná si fue uso total o recorte parcial");return;}
+  if(window._tipoUso==="parcial"){
+    const ancho=parseFloat(document.getElementById("c-ancho").value);
+    const largo=parseFloat(document.getElementById("c-largo").value);
+    if(!ancho||!largo){document.getElementById("c-ancho").focus();showToast("⚠️ Ingresá el ancho y largo del corte");return;}
+  }
+
   const it=items.find(x=>x.id===modalItemId);
   const descuento=parseInt(document.getElementById("c-qty").value)||0;
-  const medOrig=document.getElementById("c-med-orig").value.trim();
-  const medCorte=document.getElementById("c-med-corte").value.trim();
   const desc=document.getElementById("c-desc").value.trim();
   const stockAntes=it.qty;
   const stockDespues=Math.max(0,it.qty-descuento);
-
-  // Calcular % usado real si hay medidas
-  let pct=0;
-  const orig=parseMed(medOrig), corte=parseMed(medCorte);
-  if(orig&&corte) pct=Math.min(100,Math.round(corte.w*corte.h/(orig.w*orig.h)*100));
+  const pct=window._tipoUso==="total"?100:(window._pctCalculado||0);
+  const medCorte=window._tipoUso==="total"?it.med:(window._medCorteCalculada||"");
 
   const now=new Date();
   const consumo={
     id:Date.now(),
     fecha:now.toLocaleDateString("es-UY",{day:"2-digit",month:"2-digit",year:"numeric"})+" "+now.toLocaleTimeString("es-UY",{hour:"2-digit",minute:"2-digit"}),
     proyecto,presup,operario,desc,pct,
-    medOrig:medOrig||it.med,
+    tipoUso:window._tipoUso,
+    medOrig:it.med,
     medCorte:medCorte,
     chapa:it.mat+" "+it.esp,
     mat:it.mat,esp:it.esp,med:it.med,tipo:it.tipo,pallet:it.pallet,
