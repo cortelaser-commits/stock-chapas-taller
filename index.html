@@ -901,13 +901,6 @@ function switchTab(tab,el){
 }
 function toggleRef(el){const b=document.getElementById("ref-body"),open=b.style.display!=="block";b.style.display=open?"block":"none";el.classList.toggle("open",open);}
 
-function verificarClave(){
-  const clave=document.getElementById("login-input").value;
-  if(clave==="2675"){
-    document.getElementById("login-screen").style.display="none";
-    document.getElementById("app").style.display="block";
-    sessionStorage.setItem("auth","ok");
-    // Pre-cargar precios default en items que no tienen precio
 function inicializarPrecios(){
   let cambio=false;
   items.forEach(it=>{
@@ -918,7 +911,14 @@ function inicializarPrecios(){
   });
   if(cambio)guardarEnServidor();
 }
-cargarDesdeServidor();
+
+function verificarClave(){
+  const clave=document.getElementById("login-input").value;
+  if(clave==="2675"){
+    document.getElementById("login-screen").style.display="none";
+    document.getElementById("app").style.display="block";
+    sessionStorage.setItem("auth","ok");
+    cargarDesdeServidor();
   } else {
     document.getElementById("login-error").textContent="Clave incorrecta, intentá de nuevo";
     document.getElementById("login-input").value="";
