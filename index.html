@@ -199,6 +199,8 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
   <div class="tabs">
     <div class="tab active" onclick="switchTab('stock',this)">📋 Stock</div>
     <div class="tab" onclick="switchTab('historial',this)">📊 Historial de consumos</div>
+    <div class="tab" onclick="switchTab('precios',this)">💰 Precios</div>
+    <div class="tab" onclick="switchTab('precios',this)">💰 Gestión de precios</div>
   </div>
 
   <!-- TAB STOCK -->
@@ -277,6 +279,18 @@ tbody td{padding:9px 14px;font-size:13px;vertical-align:middle}
             <ul><li>0.6 · 0.8 · 1.0</li><li>1.2 · 1.5 · 2.0</li><li>3.0 · 4.0 · 5.0</li><li>6.0 · 8.0 · 10 · 12</li></ul>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB PRECIOS -->
+  <div id="tab-precios" class="tab-content">
+    <div style="max-width:580px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)">
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">💰 Precios por kg en USD</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Al actualizar los precios se aplican a todos los consumos nuevos automáticamente.</div>
+        <div id="tabla-precios-ui"></div>
+        <button onclick="guardarPrecios()" style="margin-top:20px;height:38px;padding:0 24px;background:#1a1917;color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;width:100%">💾 Guardar precios</button>
       </div>
     </div>
   </div>
@@ -516,14 +530,7 @@ function render(){
 function changeQty(id,d){const it=items.find(x=>x.id===id);if(it){it.qty=Math.max(0,it.qty+d);render();guardarEnServidor();}}
 function updateQty(id,v){const it=items.find(x=>x.id===id);if(it){it.qty=Math.max(0,parseInt(v)||0);render();guardarEnServidor();}}
 // Precios USD/kg por defecto según material y espesor
-function getPrecioDefault(mat, esp) {
-  const espNum = parseFloat(esp) || 0;
-  const ml = mat.toLowerCase();
-  if (ml.includes("corten")) return 1.74;
-  if (ml.includes("inox")) return espNum >= 4 ? 4.30 : 3.74;
-  if (ml.includes("galvan") || ml.includes("carbon") || ml.includes("descap")) return 0.89;
-  return 0;
-}
+
 
 // Densidades kg/m³ por material
 const DENSIDAD = {
@@ -894,12 +901,85 @@ function exportCSV(){
 }
 
 function switchTab(tab,el){
+  if(tab==="precios") renderTablaPrecios();
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
   el.classList.add("active");
   document.getElementById("tab-"+tab).classList.add("active");
 }
 function toggleRef(el){const b=document.getElementById("ref-body"),open=b.style.display!=="block";b.style.display=open?"block":"none";el.classList.toggle("open",open);}
+
+// ── GESTIÓN DE PRECIOS ──────────────────────────────────────────
+const CATEGORIAS_PRECIO = [
+  { id:"acero_carbono",   label:"Acero Carbono",          nota:"todos los espesores",  mat:["Acero Carbono"],   espesorMax:null, default:0.89 },
+  { id:"acero_descapado", label:"Acero Descapado",        nota:"todos los espesores",  mat:["Acero Descapado"], espesorMax:null, default:0 },
+  { id:"galvanizada",     label:"Galvanizada",             nota:"todos los espesores",  mat:["Galvanizada"],     espesorMax:null, default:0.89 },
+  { id:"corten",          label:"Acero Corten",            nota:"todos los espesores",  mat:["Acero Corten"],    espesorMax:null, default:1.74 },
+  { id:"inox_frio",       label:"Inox (laminado en frío)", nota:"hasta 3mm",            mat:["Inox 304","Inox 316","Inox 430"], espesorMax:3,    default:3.74 },
+  { id:"inox_caliente",   label:"Inox (laminado en caliente)", nota:"4mm en adelante",  mat:["Inox 304","Inox 316","Inox 430"], espesorMax:null, espesorMin:4, default:4.30 },
+];
+
+let tablaPrecios = {};
+
+function initTablaPrecios(){
+  // Cargar precios guardados o usar defaults
+  const guardados = JSON.parse(localStorage.getItem("precios_fischer")||"{}");
+  CATEGORIAS_PRECIO.forEach(cat=>{
+    tablaPrecios[cat.id] = guardados[cat.id] !== undefined ? guardados[cat.id] : cat.default;
+  });
+  renderTablaPrecios();
+}
+
+function renderTablaPrecios(){
+  const cont = document.getElementById("tabla-precios-ui");
+  if(!cont) return;
+  cont.innerHTML = CATEGORIAS_PRECIO.map(cat => `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600;color:var(--text)">${cat.label}</div>
+        <div style="font-size:12px;color:var(--text3)">${cat.nota}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:13px;color:var(--text2)">USD</span>
+        <input type="number" min="0" step="0.01" value="${tablaPrecios[cat.id]||0}"
+          id="precio-${cat.id}"
+          style="width:90px;height:36px;text-align:center;font-size:15px;font-weight:600;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text)">
+        <span style="font-size:13px;color:var(--text2)">/kg</span>
+      </div>
+    </div>
+  `).join("");
+}
+
+function guardarPrecios(){
+  CATEGORIAS_PRECIO.forEach(cat=>{
+    const val = parseFloat(document.getElementById("precio-"+cat.id).value)||0;
+    tablaPrecios[cat.id] = val;
+  });
+  localStorage.setItem("precios_fischer", JSON.stringify(tablaPrecios));
+  // Actualizar precios en todos los items del stock
+  let cambio=false;
+  items.forEach(it=>{
+    const nuevoPrecio = getPrecioDefault(it.mat, it.esp);
+    if(it.precio !== nuevoPrecio){ it.precio = nuevoPrecio; cambio=true; }
+  });
+  if(cambio) guardarEnServidor();
+  showToast("💾 Precios actualizados correctamente");
+  render();
+}
+
+function getPrecioDefault(mat, esp){
+  const espNum = parseFloat(esp)||0;
+  const ml = mat.toLowerCase();
+  // Buscar en tabla de precios
+  for(const cat of CATEGORIAS_PRECIO){
+    const matchMat = cat.mat.some(m=>m.toLowerCase()===ml||ml.includes(m.toLowerCase()));
+    if(!matchMat) continue;
+    if(cat.espesorMax && espNum > cat.espesorMax) continue;
+    if(cat.espesorMin && espNum < cat.espesorMin) continue;
+    return tablaPrecios[cat.id]||0;
+  }
+  return 0;
+}
 
 function inicializarPrecios(){
   let cambio=false;
@@ -918,6 +998,7 @@ function verificarClave(){
     document.getElementById("login-screen").style.display="none";
     document.getElementById("app").style.display="block";
     sessionStorage.setItem("auth","ok");
+    initTablaPrecios();
     cargarDesdeServidor();
   } else {
     document.getElementById("login-error").textContent="Clave incorrecta, intentá de nuevo";
@@ -927,6 +1008,7 @@ function verificarClave(){
   }
 }
 // Verificar si ya estaba autenticado en esta sesión
+initTablaPrecios();
 if(sessionStorage.getItem("auth")==="ok"){
   document.getElementById("login-screen").style.display="none";
   document.getElementById("app").style.display="block";
